@@ -29,11 +29,20 @@ public class IngredientTest {
     }
 
     @Test
-    public void testIngredientConstructorAndGetters() {
+    public void testIngredientGetTypeReturnsCorrectType() {
         Ingredient ingredient = new Ingredient(type, name, price);
+        Assert.assertEquals("Тип ингредиента должен совпадать с заданным", type, ingredient.getType());
+    }
 
-        Assert.assertEquals(type, ingredient.getType());
-        Assert.assertEquals(name, ingredient.getName());
-        Assert.assertEquals(price, ingredient.getPrice(), 0.001);
+    @Test
+    public void testIngredientGetNameReturnsCorrectName() {
+        Ingredient ingredient = new Ingredient(type, name, price);
+        Assert.assertEquals("Имя ингредиента должно совпадать с заданным", name, ingredient.getName());
+    }
+
+    @Test
+    public void testIngredientGetPriceReturnsCorrectPrice() {
+        Ingredient ingredient = new Ingredient(type, name, price);
+        Assert.assertEquals("Цена ингредиента должна совпадать с заданной", price, ingredient.getPrice(), 0.001);
     }
 }

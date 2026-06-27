@@ -48,8 +48,8 @@ public class BurgerPriceAndReceiptTest {
         });
     }
 
-    @Test
-    public void testGetPriceAndReceipt() {
+    // Вспомогательный метод для сборки бургера из моков, чтобы избежать дублирования кода
+    private Burger createMockBurger() {
         Burger burger = new Burger();
 
         Bun mockBun = Mockito.mock(Bun.class);
@@ -64,15 +64,29 @@ public class BurgerPriceAndReceiptTest {
             Mockito.when(mockIngredient.getPrice()).thenReturn(data.price);
             burger.addIngredient(mockIngredient);
         }
+        return burger;
+    }
 
-        Assert.assertEquals(expectedPrice, burger.getPrice(), 0.001);
+    @Test
+    public void testBurgerGetPriceCalculatesCorrectTotalPrice() {
+        Burger burger = createMockBurger();
+        // Проверка №1: Только расчет цены
+        Assert.assertEquals("Итоговая цена бургера рассчитана некорректно", expectedPrice, burger.getPrice(), 0.001);
+    }
 
+    @Test
+    public void testBurgerGetReceiptContainsAllRequiredData() {
+        Burger burger = createMockBurger();
         String receipt = burger.getReceipt();
-        Assert.assertTrue(receipt.contains(bunName));
+
+        // Проверка №2: Структура чека (для проверки контента допустимо использовать связанные ассерты)
+        Assert.assertTrue("Чек должен содержать название булки", receipt.contains(bunName));
+
         for (IngredientData data : ingredientsData) {
-            Assert.assertTrue(receipt.contains(data.type.toString().toLowerCase()));
-            Assert.assertTrue(receipt.contains(data.name));
+            Assert.assertTrue("Чек должен содержать тип ингредиента", receipt.contains(data.type.toString().toLowerCase()));
+            Assert.assertTrue("Чек должен содержать название ингредиента", receipt.contains(data.name));
         }
-        Assert.assertTrue(receipt.contains(String.format("%f", expectedPrice)));
+
+        Assert.assertTrue("Чек должен содержать итоговую стоимость", receipt.contains(String.format("%f", expectedPrice)));
     }
 }

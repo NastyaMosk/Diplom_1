@@ -27,31 +27,43 @@ public class BurgerTest {
     }
 
     @Test
-    public void testSetBuns() {
+    public void testSetBunsSetsCorrectBun() {
         burger.setBuns(bun);
-        Assert.assertEquals(bun, burger.bun);
+        Assert.assertEquals("Булка должна успешно установиться в бургер", bun, burger.bun);
     }
 
     @Test
-    public void testAddIngredient() {
+    public void testAddIngredientAddsToCollection() {
         burger.addIngredient(ingredientFirst);
-        Assert.assertTrue(burger.ingredients.contains(ingredientFirst));
-        Assert.assertEquals(1, burger.ingredients.size());
+        Assert.assertTrue("Список ингредиентов должен содержать добавленный элемент", burger.ingredients.contains(ingredientFirst));
     }
 
     @Test
-    public void testRemoveIngredient() {
+    public void testAddIngredientIncreasesCollectionSize() {
+        burger.addIngredient(ingredientFirst);
+        Assert.assertEquals("Размер списка ингредиентов должен стать равен 1", 1, burger.ingredients.size());
+    }
+
+    @Test
+    public void testRemoveIngredientLeavesCollectionEmpty() {
         burger.addIngredient(ingredientFirst);
         burger.removeIngredient(0);
-        Assert.assertTrue(burger.ingredients.isEmpty());
+        Assert.assertTrue("Список ингредиентов должен стать пустым после удаления", burger.ingredients.isEmpty());
     }
 
     @Test
-    public void testMoveIngredient() {
+    public void testMoveIngredientChangesFirstElementIndex() {
         burger.addIngredient(ingredientFirst);
         burger.addIngredient(ingredientSecond);
         burger.moveIngredient(1, 0);
-        Assert.assertEquals(ingredientSecond, burger.ingredients.get(0));
-        Assert.assertEquals(ingredientFirst, burger.ingredients.get(1));
+        Assert.assertEquals("Второй ингредиент должен переместиться на позицию первого (индекс 0)", ingredientSecond, burger.ingredients.get(0));
+    }
+
+    @Test
+    public void testMoveIngredientChangesSecondElementIndex() {
+        burger.addIngredient(ingredientFirst);
+        burger.addIngredient(ingredientSecond);
+        burger.moveIngredient(1, 0);
+        Assert.assertEquals("Первый ингредиент должен сдвинуться на позицию второго (индекс 1)", ingredientFirst, burger.ingredients.get(1));
     }
 }
