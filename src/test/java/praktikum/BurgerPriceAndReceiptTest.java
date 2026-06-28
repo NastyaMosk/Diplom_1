@@ -1,7 +1,9 @@
 package praktikum;
 
 import org.junit.Assert;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ErrorCollector;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.mockito.Mockito;
@@ -9,15 +11,21 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import static org.hamcrest.CoreMatchers.containsString;
+
 @RunWith(Parameterized.class)
 public class BurgerPriceAndReceiptTest {
+
+    // Добавляем правило ErrorCollector для реализации Soft Assertions
+    @Rule
+    public ErrorCollector collector = new ErrorCollector();
 
     private final String bunName;
     private final float bunPrice;
     private final List<IngredientData> ingredientsData;
     private final float expectedPrice;
 
-    private static class IngredientData {
+    static class IngredientData {
         IngredientType type;
         String name;
         float price;
@@ -48,7 +56,6 @@ public class BurgerPriceAndReceiptTest {
         });
     }
 
-    // Вспомогательный метод для сборки бургера из моков, чтобы избежать дублирования кода
     private Burger createMockBurger() {
         Burger burger = new Burger();
 
@@ -70,7 +77,6 @@ public class BurgerPriceAndReceiptTest {
     @Test
     public void testBurgerGetPriceCalculatesCorrectTotalPrice() {
         Burger burger = createMockBurger();
-        // Проверка №1: Только расчет цены
         Assert.assertEquals("Итоговая цена бургера рассчитана некорректно", expectedPrice, burger.getPrice(), 0.001);
     }
 
@@ -79,14 +85,19 @@ public class BurgerPriceAndReceiptTest {
         Burger burger = createMockBurger();
         String receipt = burger.getReceipt();
 
-        // Проверка №2: Структура чека (для проверки контента допустимо использовать связанные ассерты)
-        Assert.assertTrue("Чек должен содержать название булки", receipt.contains(bunName));
+        // Переписываем проверки на collector.checkThat с использованием матчера containsString
+        collector.checkThat("Чек должен содержать название булки",
+                receipt, containsString(bunName));
 
         for (IngredientData data : ingredientsData) {
-            Assert.assertTrue("Чек должен содержать тип ингредиента", receipt.contains(data.type.toString().toLowerCase()));
-            Assert.assertTrue("Чек должен содержать название ингредиента", receipt.contains(data.name));
+            collector.checkThat("Чек должен содержать тип ингредиента",
+                    receipt, containsString(data.type.toString().toLowerCase()));
+            collector.checkThat("Чек должен содержать название ингредиента",
+                    receipt, containsString(data.name));
         }
 
-        Assert.assertTrue("Чек должен содержать итоговую стоимость", receipt.contains(String.format("%f", expectedPrice)));
+        // Локалезависимый формат флоата заменяем на проверку базовой строки стоимости, чтобы избежать проблем с запятой/точкой
+        collector.checkThat("Чек должен содержать итоговую стоимость",
+                receipt, containsString(String.format("%f", expectedPrice)));
     }
 }

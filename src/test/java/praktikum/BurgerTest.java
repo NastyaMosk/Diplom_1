@@ -5,6 +5,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -29,41 +30,51 @@ public class BurgerTest {
     @Test
     public void testSetBunsSetsCorrectBun() {
         burger.setBuns(bun);
-        Assert.assertEquals("Булка должна успешно установиться в бургер", bun, burger.bun);
+        // Используем встроенный метод getPrice() для косвенной проверки, что булка встала на место
+        Mockito.when(bun.getPrice()).thenReturn(100f);
+        Assert.assertEquals("Булка должна успешно рассчитаться в стоимости бургера", 200f, burger.getPrice(), 0.001);
     }
 
     @Test
-    public void testAddIngredientAddsToCollection() {
+    public void testAddIngredientIncreasesCollectionSizeAndCalculatesPrice() {
         burger.addIngredient(ingredientFirst);
-        Assert.assertTrue("Список ингредиентов должен содержать добавленный элемент", burger.ingredients.contains(ingredientFirst));
+        Mockito.when(ingredientFirst.getPrice()).thenReturn(50f);
+        // Проверяем факт добавления через метод подсчета цены (так как прямого геттера к списку ингредиентов в классе Burger нет)
+        Assert.assertEquals("Цена бургера должна включать добавленный ингредиент", 50f, burger.getPrice(), 0.001);
     }
 
     @Test
-    public void testAddIngredientIncreasesCollectionSize() {
+    public void testRemoveIngredientDecreasesPriceToZero() {
         burger.addIngredient(ingredientFirst);
-        Assert.assertEquals("Размер списка ингредиентов должен стать равен 1", 1, burger.ingredients.size());
-    }
-
-    @Test
-    public void testRemoveIngredientLeavesCollectionEmpty() {
-        burger.addIngredient(ingredientFirst);
+        Mockito.when(ingredientFirst.getPrice()).thenReturn(50f);
         burger.removeIngredient(0);
-        Assert.assertTrue("Список ингредиентов должен стать пустым после удаления", burger.ingredients.isEmpty());
+        Assert.assertEquals("Цена бургера должна стать равной 0 после удаления единственного ингредиента", 0f, burger.getPrice(), 0.001);
     }
 
     @Test
-    public void testMoveIngredientChangesFirstElementIndex() {
-        burger.addIngredient(ingredientFirst);
-        burger.addIngredient(ingredientSecond);
-        burger.moveIngredient(1, 0);
-        Assert.assertEquals("Второй ингредиент должен переместиться на позицию первого (индекс 0)", ingredientSecond, burger.ingredients.get(0));
-    }
+    public void testMoveIngredientChangesOrderInReceipt() {
+        Mockito.when(bun.getName()).thenReturn("Булочка");
+        Mockito.when(bun.getPrice()).thenReturn(100f);
+        burger.setBuns(bun);
 
-    @Test
-    public void testMoveIngredientChangesSecondElementIndex() {
+        Mockito.when(ingredientFirst.getName()).thenReturn("Соус");
+        Mockito.when(ingredientFirst.getType()).thenReturn(IngredientType.SAUCE);
+
+        Mockito.when(ingredientSecond.getName()).thenReturn("Начинка");
+        Mockito.when(ingredientSecond.getType()).thenReturn(IngredientType.FILLING);
+
         burger.addIngredient(ingredientFirst);
         burger.addIngredient(ingredientSecond);
+
+        // Перемещаем начинку на первое место
         burger.moveIngredient(1, 0);
-        Assert.assertEquals("Первый ингредиент должен сдвинуться на позицию второго (индекс 1)", ingredientFirst, burger.ingredients.get(1));
+
+        String receipt = burger.getReceipt();
+
+        // Проверяем регулярным выражением или индексами, что Начинка в чеке теперь идет ПЕРЕД Соусом
+        int fillingIndex = receipt.indexOf("filling Начинка");
+        int sauceIndex = receipt.indexOf("sauce Соус");
+
+        Assert.assertTrue("Начинка должна идти в чеке раньше Соуса после перемещения", fillingIndex < sauceIndex);
     }
 }
